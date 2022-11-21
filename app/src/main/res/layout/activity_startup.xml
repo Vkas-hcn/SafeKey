@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="185dp"
+            android:src="@drawable/ic_guide_logo"
+            app:layout_constraintBottom_toTopOf="@+id/pb_start"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.xuexiang.xui.widget.progress.HorizontalProgressView
+            android:id="@+id/pb_start"
+            android:layout_width="184dp"
+            android:layout_height="10dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="179dp"
+            app:hpv_corner_radius="@dimen/dp10"
+            app:hpv_end_color="@color/progress_end"
+            app:hpv_end_progress="92"
+            app:hpv_isTracked="true"
+            app:hpv_progress_duration="3600"
+            app:hpv_progress_textVisibility="false"
+            app:hpv_start_color="@color/progress_start"
+            app:hpv_track_color="@color/white"
+            app:hpv_track_width="@dimen/dp5"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

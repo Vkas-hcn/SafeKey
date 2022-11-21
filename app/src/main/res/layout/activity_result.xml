@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary">
+
+        <include
+            android:id="@+id/result_title"
+            layout="@layout/layout_toolbar" />
+
+        <FrameLayout
+            android:id="@+id/frameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp20"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/result_title">
+
+            <ImageView
+                android:id="@+id/img_connect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_connect" />
+
+            <ImageView
+                android:id="@+id/img_flag"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_usa" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/txt_connection_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp10"
+            android:text="@string/connected"
+            android:textColor="@color/txt_connect"
+            android:textSize="@dimen/sp20"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/frameLayout" />
+
+        <LinearLayout
+            android:id="@+id/lin_service"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp14"
+            android:layout_marginEnd="@dimen/dp14"
+            android:layout_marginTop="@dimen/dp35"
+            android:background="@drawable/bg_home_service"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="@dimen/dp17"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txt_connection_status">
+
+            <ImageView
+                android:id="@+id/img_service_flag"
+                android:layout_width="@dimen/dp34"
+                android:layout_height="@dimen/dp34" />
+
+            <TextView
+                android:id="@+id/txt_country_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dp16"
+                android:layout_weight="1"
+                android:gravity="center|left"
+                android:text="Canada"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp16" />
+
+            <TextView
+                android:id="@+id/txt_timer"
+                android:layout_width="71dp"
+                android:layout_height="19dp"
+                android:text="@string/_00_00_00"
+                android:textColor="@color/txt_connect_time"
+                android:textSize="@dimen/sp15" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
