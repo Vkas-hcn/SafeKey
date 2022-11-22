@@ -37,7 +37,6 @@ class ResultActivity : BaseActivity<ActivityResultBinding, ResultViewModel>() {
             bundle?.getString(Key.SERVER_SK_INFORMATION),
             object : TypeToken<SkServiceBean?>() {}.type
         )
-
     }
 
     override fun initToolbar() {
