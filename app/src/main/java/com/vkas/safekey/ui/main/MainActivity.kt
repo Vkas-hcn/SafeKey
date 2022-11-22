@@ -35,6 +35,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import android.content.Intent
 import android.net.Uri
+import android.view.KeyEvent
 import com.github.shadowsocks.database.ProfileManager
 import com.google.gson.reflect.TypeToken
 import com.vkas.safekey.application.App
@@ -238,9 +239,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         whetherAnimation = true
         binding.imgSwitch.setImageResource(R.mipmap.ic_rotate)
         binding.imgSwitch.startAnimation(animation)
-        binding.txtConnectionStatus.text = getString(R.string.connecting)
+        if (state.canStop) {
+            binding.txtConnectionStatus.text = getString(R.string.disconnecting)
+        } else {
+            binding.txtConnectionStatus.text = getString(R.string.connecting)
+        }
         lifecycleScope.launch {
-            delay(1000)
+            delay(2000)
             if (state.canStop) {
                 Core.stopService()
                 viewModel.jumpConnectionResultsPage(false)
@@ -280,16 +285,23 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
     private fun connectionStatusJudgment(state: String) {
         KLog.e("TAG", "connectionStatusJudgment=${state}")
         when (state) {
-            "Connecting" -> {
-                binding.txtConnectionStatus.text = getString(R.string.connecting)
-            }
+//            "Connecting" -> {
+//                binding.txtConnectionStatus.text = getString(R.string.connecting)
+//            }
             "Connected" -> {
                 // 连接成功
                 connectionServerSuccessful()
                 binding.txtConnectionStatus.text = getString(R.string.connected)
             }
+//            "Stopping" -> {
+//                binding.txtConnectionStatus.text = getString(R.string.disconnecting)
+//            }
             "Stopped" -> {
                 disconnectServerSuccessful()
+                binding.txtConnectionStatus.text = getString(R.string.connect)
+                binding.txtTimer.text = getString(R.string._00_00_00)
+            }
+            else -> {
                 binding.txtConnectionStatus.text = getString(R.string.connect)
             }
         }
@@ -376,8 +388,15 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         if (requestCode == 0x11 && whetherRefreshServer) {
             setFastInformation(viewModel.afterDisconnectionServerData)
             val serviceData = toJson(viewModel.afterDisconnectionServerData)
-            MmkvUtils.set("currentServerData",serviceData)
+            MmkvUtils.set("currentServerData", serviceData)
             viewModel.currentServerData = viewModel.afterDisconnectionServerData
         }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            finish()
+        }
+        return true
     }
 }
