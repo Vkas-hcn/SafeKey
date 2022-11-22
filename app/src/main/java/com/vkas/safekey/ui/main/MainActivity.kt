@@ -36,6 +36,8 @@ import kotlinx.coroutines.launch
 import android.content.Intent
 import android.net.Uri
 import android.view.KeyEvent
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.MutableLiveData
 import com.github.shadowsocks.database.ProfileManager
 import com.google.gson.reflect.TypeToken
 import com.vkas.safekey.application.App
@@ -46,6 +48,7 @@ import com.xuexiang.xutil.net.JSONUtils
 import com.xuexiang.xutil.net.JsonUtil
 import com.xuexiang.xutil.net.JsonUtil.toJson
 import com.xuexiang.xutil.resource.ResourceUtils
+import kotlinx.coroutines.Dispatchers
 
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
@@ -61,6 +64,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
     // 是否返回刷新服务器
     var whetherRefreshServer = false
 
+    // 跳转结果页
+    private var liveJumpResultsPage = MutableLiveData<Bundle>()
     companion object {
         var stateListener: ((BaseService.State) -> Unit)? = null
 
@@ -143,8 +148,16 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     private fun jumpResultsPageData() {
+        liveJumpResultsPage.observe(this, {
+            lifecycleScope.launch(Dispatchers.Main.immediate) {
+                delay(300L)
+                if (lifecycle.currentState == Lifecycle.State.RESUMED) {
+                    startActivityForResult(ResultActivity::class.java, 0x11, it)
+                }
+            }
+        })
         viewModel.liveJumpResultsPage.observe(this, {
-            startActivityForResult(ResultActivity::class.java, 0x11, it)
+            liveJumpResultsPage.postValue(it)
         })
     }
 
@@ -285,17 +298,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
     private fun connectionStatusJudgment(state: String) {
         KLog.e("TAG", "connectionStatusJudgment=${state}")
         when (state) {
-//            "Connecting" -> {
-//                binding.txtConnectionStatus.text = getString(R.string.connecting)
-//            }
             "Connected" -> {
                 // 连接成功
                 connectionServerSuccessful()
                 binding.txtConnectionStatus.text = getString(R.string.connected)
             }
-//            "Stopping" -> {
-//                binding.txtConnectionStatus.text = getString(R.string.disconnecting)
-//            }
             "Stopped" -> {
                 disconnectServerSuccessful()
                 binding.txtConnectionStatus.text = getString(R.string.connect)
@@ -367,6 +374,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         connection.bandwidthTimeout = 500
     }
 
+    override fun onResume() {
+        super.onResume()
+    }
+
     override fun onPause() {
         super.onPause()
     }
@@ -374,7 +385,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
     override fun onStop() {
         super.onStop()
         connection.bandwidthTimeout = 0
-
     }
 
     override fun onDestroy() {
