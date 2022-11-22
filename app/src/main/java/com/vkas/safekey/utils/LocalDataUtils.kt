@@ -66,10 +66,6 @@ object LocalDataUtils {
                 }
             }
         }
-        KLog.e(
-            "list",
-            "findFastAndOrdinaryIntersection----->${JsonUtil.toJson(intersectionList)}"
-        )
         return intersectionList
     }
 

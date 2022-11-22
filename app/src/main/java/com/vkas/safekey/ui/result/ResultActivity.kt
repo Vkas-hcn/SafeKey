@@ -62,12 +62,6 @@ class ResultActivity : BaseActivity<ActivityResultBinding, ResultViewModel>() {
             binding.txtConnectionStatus.setTextColor(getColor(R.color.txt_disconnect_state))
             binding.txtTimer.setTextColor(getColor(R.color.txt_disconnect_time))
         }
-//        if(currentServerBean.sk_bestServer == true){
-//            binding.imgFlag.setImageResource(R.drawable.ic_fast)
-//            binding.imgServiceFlag.setImageResource(R.drawable.ic_fast)
-//            binding.txtCountryName.text = currentServerBean.sk_country
-//
-//        }
         binding.imgFlag.setImageResource(LocalDataUtils.getFlagThroughCountry(currentServerBean.sk_country.toString()))
         binding.imgServiceFlag.setImageResource(
             LocalDataUtils.getFlagThroughCountry(

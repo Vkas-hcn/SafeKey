@@ -43,9 +43,6 @@ class SelectActivity : BaseActivity<ActivitySelectBinding, SelectViewModel>() {
             bundle?.getString(Key.CURRENT_SK_SERVICE),
             object : TypeToken<SkServiceBean?>() {}.type
         )
-        KLog.e("TAG", "whetherToConnect=${whetherToConnect}")
-        KLog.e("TAG", "checkSkServiceBean=${JsonUtil.toJson(checkSkServiceBean)}")
-
     }
 
     override fun initToolbar() {

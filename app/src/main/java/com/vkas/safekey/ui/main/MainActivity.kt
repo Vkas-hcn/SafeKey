@@ -35,9 +35,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import android.content.Intent
 import android.net.Uri
+import com.github.shadowsocks.database.ProfileManager
+import com.google.gson.reflect.TypeToken
+import com.vkas.safekey.application.App
+import com.vkas.safekey.application.App.Companion.mmkv
 import com.vkas.safekey.ui.web.PrivacyPolicyActivity
+import com.vkas.safekey.utils.MmkvUtils
 import com.xuexiang.xutil.net.JSONUtils
+import com.xuexiang.xutil.net.JsonUtil
 import com.xuexiang.xutil.net.JsonUtil.toJson
+import com.xuexiang.xutil.resource.ResourceUtils
 
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
@@ -93,7 +100,18 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         changeState(BaseService.State.Idle, animate = false)
         connection.connect(this, this)
         DataStore.publicStore.registerChangeListener(this)
-        viewModel.initializeServerData()
+        KLog.e("TAG", "MainActivity-----state---->${SkTimerThread.getInstance().isStopThread}")
+        if (SkTimerThread.getInstance().isStopThread) {
+            viewModel.initializeServerData()
+        } else {
+            val serviceData = mmkv.decodeString("currentServerData", "").toString()
+            val currentServerData: SkServiceBean = JsonUtil.fromJson(
+                serviceData,
+                object : TypeToken<SkServiceBean?>() {}.type
+            )
+            KLog.e("TAG", "viewModel.currentServerData===${toJson(currentServerData)}")
+            setFastInformation(currentServerData)
+        }
     }
 
     private fun liveEventBusReceive() {
@@ -119,6 +137,14 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
     override fun initViewObservable() {
         super.initViewObservable()
         setServiceData()
+        // 跳转结果页
+        jumpResultsPageData()
+    }
+
+    private fun jumpResultsPageData() {
+        viewModel.liveJumpResultsPage.observe(this, {
+            startActivityForResult(ResultActivity::class.java, 0x11, it)
+        })
     }
 
     private fun setServiceData() {
@@ -127,13 +153,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         })
         viewModel.liveUpdateServerData.observe(this, {
             whetherRefreshServer = true
-//            setFastInformation(it)
-            startVpn()
+            connect.launch(null)
+
         })
         viewModel.liveNoUpdateServerData.observe(this, {
             whetherRefreshServer = false
             setFastInformation(it)
-            startVpn()
+            connect.launch(null)
         })
     }
 
@@ -164,8 +190,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         } else {
             bundle.putBoolean(com.vkas.safekey.key.Key.WHETHER_SK_CONNECTED, false)
         }
-        val currentServerString = toJson(viewModel.currentServerData)
-        bundle.putString(com.vkas.safekey.key.Key.CURRENT_SK_SERVICE, currentServerString)
+        val serviceData = mmkv.decodeString("currentServerData", "").toString()
+        bundle.putString(com.vkas.safekey.key.Key.CURRENT_SK_SERVICE, serviceData)
         startActivity(SelectActivity::class.java, bundle)
     }
 
@@ -217,10 +243,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
             delay(1000)
             if (state.canStop) {
                 Core.stopService()
-                connectionComplete(false)
+                viewModel.jumpConnectionResultsPage(false)
             } else {
                 Core.startService()
-                connectionComplete(true)
+                viewModel.jumpConnectionResultsPage(true)
+
             }
         }
     }
@@ -260,15 +287,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
                 // 连接成功
                 connectionServerSuccessful()
                 binding.txtConnectionStatus.text = getString(R.string.connected)
-//                connectionComplete(true)
             }
             "Stopped" -> {
                 disconnectServerSuccessful()
                 binding.txtConnectionStatus.text = getString(R.string.connect)
-//                connectionComplete(false)
-            }
-            else -> {
-                binding.txtConnectionStatus.text = getString(R.string.configuring)
             }
         }
 
@@ -296,17 +318,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         binding.imgConnectBg.setImageResource(R.drawable.ic_home_not_connect)
         binding.imgSwitch.setImageResource(R.drawable.ic_switch)
         binding.imgProgressbar.setImageResource(R.drawable.ic_process_not_connect)
-    }
-
-    /**
-     * 连接完成
-     */
-    private fun connectionComplete(isConnection: Boolean) {
-        val bundle = Bundle()
-        val currentServerString = toJson(viewModel.currentServerData)
-        bundle.putBoolean(com.vkas.safekey.key.Key.CONNECTION_SK_STATUS, isConnection)
-        bundle.putString(com.vkas.safekey.key.Key.SERVER_SK_INFORMATION, currentServerString)
-        startActivityForResult(ResultActivity::class.java, 0x11, bundle)
     }
 
     override fun onPreferenceDataStoreChanged(store: PreferenceDataStore, key: String) {
@@ -364,6 +375,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 0x11 && whetherRefreshServer) {
             setFastInformation(viewModel.afterDisconnectionServerData)
+            val serviceData = toJson(viewModel.afterDisconnectionServerData)
+            MmkvUtils.set("currentServerData",serviceData)
             viewModel.currentServerData = viewModel.afterDisconnectionServerData
         }
     }

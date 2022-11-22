@@ -63,7 +63,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/dp8"
-                        android:text="@string/connect"
                         android:textColor="@color/white"
                         android:textSize="@dimen/sp18" />
                 </LinearLayout>

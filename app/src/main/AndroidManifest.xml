@@ -19,6 +19,7 @@
             android:value="ca-app-pub-2174740078812392~7263824144" />
         <activity
             android:name=".ui.start.StartupActivity"
+            android:theme="@style/SplashTheme"
             android:launchMode="singleTop"
             android:exported="true">
             <intent-filter>
