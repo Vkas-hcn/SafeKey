@@ -42,9 +42,9 @@ object Key {
     const val NOT_CONNECTED_RETURN="notConnectedReturn"
 
     // privacy_agreement
-    const val PRIVACY_SK_AGREEMENT="https://www.baidu.com/"
+    const val PRIVACY_SK_AGREEMENT="https://sites.google.com/view/safe-keyapp/home"
     // email
-    const val MAILBOX_SK_ADDRESS="vkas@qq.com"
+    const val MAILBOX_SK_ADDRESS="maywalshuie3332@gmail.com"
     // 插屏广告缓存
     const val PLUG_SK_ADVERTISEMENT_CACHE="plugSkAdvertisementCache"
     // connect插屏广告展示

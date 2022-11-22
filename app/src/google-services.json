@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "700338100347",
+    "project_id": "safe-key-558ba",
+    "storage_bucket": "safe-key-558ba.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700338100347:android:bbf6d13ca9dc0e9c75eade",
+        "android_client_info": {
+          "package_name": "com.safekey.fast.pro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700338100347-fgpbb1k8rec204ohiponkqc97srskqq2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDpl0Bf2KKpKWO4YVefklAUd5H9y3iRF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "700338100347-fgpbb1k8rec204ohiponkqc97srskqq2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

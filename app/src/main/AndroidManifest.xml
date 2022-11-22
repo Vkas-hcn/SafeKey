@@ -17,6 +17,8 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-2174740078812392~7263824144" />
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+
         <activity
             android:name=".ui.start.StartupActivity"
             android:theme="@style/SplashTheme"

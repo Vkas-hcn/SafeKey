@@ -3,13 +3,15 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id 'kotlin-kapt'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
     compileSdk rootProject.ext.android.compileSdk
 
     defaultConfig {
-        applicationId "com.demo.shadowDemo"
+        applicationId "com.safekey.fast.pro"
         minSdk rootProject.ext.android.minSdk
         targetSdk rootProject.ext.android.targetSdk
         versionCode rootProject.ext.android.versionCode
@@ -66,4 +68,7 @@ dependencies {
     implementation rootProject.ext.dependencies.firebaseConfigKtx
     implementation rootProject.ext.dependencies.gmsAds
     implementation project(':shadowsocks')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.facebook.android:facebook-android-sdk:12.3.0'
 }
