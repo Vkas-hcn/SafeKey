@@ -4,7 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
 
+        <variable
+            name="resultAd"
+            type="Boolean"
+            android:value="false" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -92,6 +97,31 @@
                 android:textColor="@color/txt_connect_time"
                 android:textSize="@dimen/sp15" />
         </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp16"
+            android:background="@drawable/bg_home_ad"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lin_service">
+
+            <FrameLayout
+                android:id="@+id/sk_ad_frame"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{resultAd ? View.VISIBLE : View.GONE}" />
+
+            <ImageView
+                android:id="@+id/img_sk_ad_frame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_result_placeholder"
+                android:visibility="@{resultAd ? View.GONE : View.VISIBLE}" />
+        </FrameLayout>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

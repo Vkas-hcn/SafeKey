@@ -4,14 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <import type="android.view.View" />
+
         <variable
             name="presenter"
             type="com.vkas.safekey.ui.main.MainActivity.Presenter" />
+
         <variable
             name="sidebarShows"
-            android:value="false"
-            type="Boolean" />
+            type="Boolean"
+            android:value="false" />
+
+        <variable
+            name="homeAd"
+            type="Boolean"
+            android:value="false" />
     </data>
 
     <FrameLayout
@@ -132,6 +140,31 @@
                         android:layout_height="wrap_content"
                         android:src="@drawable/ic_go" />
                 </LinearLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp220"
+                    android:layout_margin="@dimen/dp16"
+                    android:background="@drawable/bg_home_ad"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <FrameLayout
+                        android:id="@+id/sk_ad_frame"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="@{homeAd ? View.VISIBLE : View.GONE}" />
+
+                    <ImageView
+                        android:id="@+id/img_sk_ad_frame"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_home_placeholder"
+
+                        android:visibility="@{homeAd ? View.GONE : View.VISIBLE}" />
+                </FrameLayout>
             </LinearLayout>
 
         </LinearLayout>
@@ -142,8 +175,6 @@
             android:layout_width="@dimen/dp262"
             android:layout_height="match_parent"
             android:onClick="@{() ->presenter.clickMainMenu()}"
-            android:visibility="@{sidebarShows ? View.VISIBLE : View.GONE}">
-
-        </include>
+            android:visibility="@{sidebarShows ? View.VISIBLE : View.GONE}" />
     </FrameLayout>
 </layout>

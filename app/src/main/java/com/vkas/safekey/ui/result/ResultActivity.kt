@@ -2,12 +2,15 @@ package com.vkas.safekey.ui.result
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.reflect.TypeToken
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.vkas.safekey.BR
 import com.vkas.safekey.R
+import com.vkas.safekey.ad.LoadAds
 import com.vkas.safekey.application.App
 import com.vkas.safekey.application.App.Companion.mmkv
+import com.vkas.safekey.application.App.Companion.skAdLog
 import com.vkas.safekey.base.BaseActivity
 import com.vkas.safekey.bean.SkServiceBean
 import com.vkas.safekey.databinding.ActivityResultBinding
@@ -15,9 +18,11 @@ import com.vkas.safekey.key.Key
 import com.vkas.safekey.utils.KLog
 import com.vkas.safekey.utils.LocalDataUtils
 import com.xuexiang.xutil.net.JsonUtil
+import kotlinx.coroutines.*
 
 class ResultActivity : BaseActivity<ActivityResultBinding, ResultViewModel>() {
     private var isConnection: Boolean = false
+    private var jobResult: Job? = null
 
     //当前服务器
     private lateinit var currentServerBean: SkServiceBean
@@ -41,6 +46,11 @@ class ResultActivity : BaseActivity<ActivityResultBinding, ResultViewModel>() {
 
     override fun initToolbar() {
         super.initToolbar()
+        with(resources.displayMetrics) {
+            density = heightPixels / 780.0F
+            densityDpi = (160 * density).toInt()
+        }
+        App.nativeAdRefresh = false
         displayTimer()
         binding.resultTitle.imgBack.visibility = View.VISIBLE
         binding.resultTitle.tvTitle.visibility = View.GONE
@@ -60,6 +70,7 @@ class ResultActivity : BaseActivity<ActivityResultBinding, ResultViewModel>() {
             binding.txtConnectionStatus.text = getString(R.string.disconnect)
             binding.txtConnectionStatus.setTextColor(getColor(R.color.txt_disconnect_state))
             binding.txtTimer.setTextColor(getColor(R.color.txt_disconnect_time))
+            binding.txtTimer.text = mmkv.decodeString(Key.LAST_TIME, "").toString()
         }
         binding.imgFlag.setImageResource(LocalDataUtils.getFlagThroughCountry(currentServerBean.sk_country.toString()))
         binding.imgServiceFlag.setImageResource(
@@ -68,6 +79,21 @@ class ResultActivity : BaseActivity<ActivityResultBinding, ResultViewModel>() {
             )
         )
         binding.txtCountryName.text = currentServerBean.sk_country
+        initNativeAds()
+    }
+    private fun initNativeAds() {
+        jobResult= GlobalScope.launch {
+            withTimeout(10000L) {
+                while (isActive) {
+                    LoadAds.getInstanceResult().setDisplayResultNativeAd(this@ResultActivity,binding)
+                    if (LoadAds.getInstanceResult().whetherToShow) {
+                        jobResult?.cancel()
+                        jobResult =null
+                    }
+                    delay(1000L)
+                }
+            }
+        }
     }
 
     /**
@@ -83,5 +109,18 @@ class ResultActivity : BaseActivity<ActivityResultBinding, ResultViewModel>() {
                     binding.txtTimer.text = mmkv.decodeString(Key.LAST_TIME, "").toString()
                 }
             }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        LoadAds.getInstanceResult().whetherToShow =false
+        if(App.nativeAdRefresh){
+            if(LoadAds.getInstanceResult().appAdData !=null){
+                LoadAds.getInstanceResult().setDisplayResultNativeAd(this,binding)
+            }else{
+                LoadAds.getInstanceResult().advertisementLoading(this)
+                initNativeAds()
+            }
+        }
     }
 }

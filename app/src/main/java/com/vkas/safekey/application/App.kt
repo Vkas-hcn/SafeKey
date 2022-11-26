@@ -2,10 +2,14 @@ package com.vkas.safekey.application
 
 import android.app.Activity
 import android.app.Application
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.blankj.utilcode.util.ActivityUtils.finishActivity
 import com.github.shadowsocks.Core
 import com.google.android.gms.ads.MobileAds
 import com.tencent.mmkv.MMKV
@@ -19,29 +23,28 @@ import com.vkas.safekey.BuildConfig
 import com.vkas.safekey.ui.main.MainActivity
 import com.vkas.safekey.base.AppManagerMVVM
 import com.vkas.safekey.key.Key
-import com.vkas.safekey.utils.CalendarUtils
-import com.vkas.safekey.utils.KLog
-import com.vkas.safekey.utils.MmkvUtils
-import com.vkas.safekey.utils.SkTimerThread
+import com.vkas.safekey.ui.start.StartupActivity
+import com.vkas.safekey.utils.*
 import com.xuexiang.xui.XUI
 import com.xuexiang.xutil.XUtil
-import kotlinx.coroutines.Job
+import com.xuexiang.xutil.app.ActivityLifecycleHelper
+import kotlinx.coroutines.*
 
 class App : Application(), androidx.work.Configuration.Provider by Core, LifecycleObserver {
     private var job_sk: Job? = null
-    private val LOG_TAG_SK = "ad-log"
+
     private var flag = 0
     private var ad_activity_sk: Activity? = null
     private var top_activity_sk: Activity? = null
     companion object {
+        val skAdLog = "SkAdLog"
         // app当前是否在后台
         var isBackData = false
 
         // 是否进入后台（三秒后）
         var whetherBackground = false
-
-        // 是否进入过后台（true进入；false未进入）
-        var whetherInBackground = false
+        // 原生广告刷新
+        var nativeAdRefresh = false
         val mmkv by lazy {
             //启用mmkv的多进程功能
             MMKV.mmkvWithID("SafeKey", MMKV.MULTI_PROCESS_MODE)
@@ -57,15 +60,7 @@ class App : Application(), androidx.work.Configuration.Provider by Core, Lifecyc
             adDate = mmkv.decodeString(Key.CURRENT_SK_DATE, "").toString()
             if (adDate == "") {
                 MmkvUtils.set(Key.CURRENT_SK_DATE, CalendarUtils.formatDateNow())
-                KLog.e("TAG", "CalendarUtils.formatDateNow()=${CalendarUtils.formatDateNow()}")
             } else {
-                KLog.e("TAG", "当前时间=${CalendarUtils.formatDateNow()}")
-                KLog.e("TAG", "存储时间=${adDate}")
-
-                KLog.e(
-                    "TAG",
-                    "两个时间比较=${CalendarUtils.dateAfterDate(adDate, CalendarUtils.formatDateNow())}"
-                )
                 if (CalendarUtils.dateAfterDate(adDate, CalendarUtils.formatDateNow())) {
                     MmkvUtils.set(Key.CURRENT_SK_DATE, CalendarUtils.formatDateNow())
                     MmkvUtils.set(Key.CLICKS_SK_COUNT, 0)
@@ -95,7 +90,40 @@ class App : Application(), androidx.work.Configuration.Provider by Core, Lifecyc
         }
         Core.init(this, MainActivity::class)
         SkTimerThread.getInstance().sendTimerInformation()
-//        isAppOpenSameDay()
+        isAppOpenSameDay()
+    }
+    @DelicateCoroutinesApi
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onMoveToForeground() {
+        job_sk?.cancel()
+        job_sk = null
+        KLog.v("Lifecycle", "onMoveToForeground=$whetherBackground")
+        //从后台切过来，跳转启动页
+        if (whetherBackground&& !isBackData) {
+            jumpGuidePage()
+        }
+    }
+    @DelicateCoroutinesApi
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onStopState(){
+        nativeAdRefresh =true
+        KLog.v("Lifecycle", "onSTOPJumpPage=$whetherBackground")
+        job_sk = GlobalScope.launch {
+            whetherBackground = false
+            delay(3000L)
+            whetherBackground = true
+            ad_activity_sk?.finish()
+            ActivityUtils.getActivity(StartupActivity::class.java)?.finish()
+        }
+    }
+    /**
+     * 跳转引导页
+     */
+    private fun jumpGuidePage(){
+        whetherBackground = false
+        val intent = Intent(top_activity_sk, StartupActivity::class.java)
+        intent.putExtra(Key.RETURN_SK_CURRENT_PAGE, true)
+        top_activity_sk?.startActivity(intent)
     }
     /**
      * 当主工程没有继承BaseApplication时，可以使用setApplication方法初始化BaseApplication

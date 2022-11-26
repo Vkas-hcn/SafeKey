@@ -31,24 +31,26 @@ import androidx.lifecycle.lifecycleScope
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.vkas.safekey.ui.result.ResultActivity
 import com.vkas.safekey.utils.SkTimerThread
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import android.content.Intent
 import android.net.Uri
 import android.view.KeyEvent
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.content.PackageManagerCompat.LOG_TAG
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
-import com.github.shadowsocks.database.ProfileManager
 import com.google.gson.reflect.TypeToken
+import com.vkas.safekey.ad.LoadAds
 import com.vkas.safekey.application.App
 import com.vkas.safekey.application.App.Companion.mmkv
+import com.vkas.safekey.application.App.Companion.skAdLog
 import com.vkas.safekey.ui.web.PrivacyPolicyActivity
+import com.vkas.safekey.utils.LocalDataUtils
 import com.vkas.safekey.utils.MmkvUtils
-import com.xuexiang.xutil.net.JSONUtils
 import com.xuexiang.xutil.net.JsonUtil
 import com.xuexiang.xutil.net.JsonUtil.toJson
-import com.xuexiang.xutil.resource.ResourceUtils
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
@@ -57,6 +59,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
     var state = BaseService.State.Idle
     private val connection = ShadowsocksConnection(true)
     private lateinit var animation: Animation
+    private var jobNativeAds: Job? = null
+    private var jobStart: Job? = null
 
     //动画是否进行
     private var whetherAnimation = false
@@ -85,7 +89,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
 
     override fun initToolbar() {
         super.initToolbar()
+        with(resources.displayMetrics) {
+            density = heightPixels / 780.0F
+            densityDpi = (160 * density).toInt()
+        }
         binding.presenter = Presenter()
+        App.nativeAdRefresh = false
         setImgAnimation()
         binding.mainTitle.ivRight.setOnClickListener {
             if (!whetherAnimation) {
@@ -100,6 +109,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         sidebarClickEvent()
     }
 
+    @DelicateCoroutinesApi
     override fun initData() {
         super.initData()
         liveEventBusReceive()
@@ -115,10 +125,27 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
                 serviceData,
                 object : TypeToken<SkServiceBean?>() {}.type
             )
-            KLog.e("TAG", "viewModel.currentServerData===${toJson(currentServerData)}")
             setFastInformation(currentServerData)
         }
+        initNativeAds()
     }
+
+    @DelicateCoroutinesApi
+    private fun initNativeAds() {
+        jobNativeAds = GlobalScope.launch {
+                withTimeout(10000L) {
+                    while (isActive) {
+                        LoadAds.getInstanceHome().setDisplayHomeNativeAd(this@MainActivity,binding)
+                        if (LoadAds.getInstanceHome().whetherToShow) {
+                            jobNativeAds?.cancel()
+                            jobNativeAds =null
+                        }
+                        delay(1000L)
+                    }
+                }
+        }
+    }
+
 
     private fun liveEventBusReceive() {
         LiveEventBus
@@ -137,6 +164,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
             .get(com.vkas.safekey.key.Key.CONNECTED_RETURN, SkServiceBean::class.java)
             .observeForever {
                 viewModel.updateSkServer(it, true)
+            }
+        //插屏关闭后跳转
+        LiveEventBus
+            .get(com.vkas.safekey.key.Key.PLUG_SK_ADVERTISEMENT_SHOW, Boolean::class.java)
+            .observeForever {
+                LoadAds.getInstanceConnect().advertisementLoading(this)
+                connectOrDisconnect(it)
             }
     }
 
@@ -249,6 +283,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
      * 启动VPN
      */
     private fun startVpn() {
+        KLog.d("TAG","jobStart.isActive=${jobStart?.isActive}")
+        jobStart?.cancel()
+        jobStart =null
         whetherAnimation = true
         binding.imgSwitch.setImageResource(R.mipmap.ic_rotate)
         binding.imgSwitch.startAnimation(animation)
@@ -257,19 +294,56 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         } else {
             binding.txtConnectionStatus.text = getString(R.string.connecting)
         }
-        lifecycleScope.launch {
-            delay(2000)
-            if (state.canStop) {
-                Core.stopService()
-                viewModel.jumpConnectionResultsPage(false)
-            } else {
-                Core.startService()
-                viewModel.jumpConnectionResultsPage(true)
+        App.isAppOpenSameDay()
+        if (LocalDataUtils.advertisingOnline()) {
+            KLog.d(skAdLog, "广告达到上线")
+            connectOrDisconnect(false)
+            return
+        }
+        LoadAds.getInstanceConnect().advertisementLoading(this)
+        LoadAds.getInstanceResult().advertisementLoading(this)
 
+        jobStart= GlobalScope.launch {
+            try {
+                withTimeout(10000L) {
+                    delay(1000L)
+                    while (isActive) {
+                        val showState =
+                            LoadAds.getInstanceConnect().displayConnectAdvertisement(this@MainActivity)
+                        if (showState) {
+                            jobStart?.cancel()
+                            jobStart =null
+                        }
+                        delay(1000L)
+                    }
+                }
+            } catch (e: TimeoutCancellationException) {
+                KLog.d(skAdLog,"connect---插屏超时")
+                if(jobStart!=null){
+                    connectOrDisconnect(false)
+                }
             }
         }
     }
 
+    /**
+     * 连接或断开
+     * 是否后台关闭（true：后台关闭；false：手动关闭）
+     */
+    private fun connectOrDisconnect(isBackgroundClosed:Boolean){
+        if (state.canStop) {
+            if(!isBackgroundClosed){
+                viewModel.jumpConnectionResultsPage(false)
+            }
+            Core.stopService()
+
+        } else {
+            if(!isBackgroundClosed){
+                viewModel.jumpConnectionResultsPage(true)
+            }
+            Core.startService()
+        }
+    }
     override fun stateChanged(state: BaseService.State, profileName: String?, msg: String?) =
         changeState(state)
 
@@ -376,6 +450,17 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
 
     override fun onResume() {
         super.onResume()
+        LoadAds.getInstanceHome().whetherToShow =false
+        if(App.nativeAdRefresh){
+            if(LoadAds.getInstanceHome().appAdData !=null){
+                KLog.d(skAdLog,"onResume------>1")
+                LoadAds.getInstanceHome().setDisplayHomeNativeAd(this,binding)
+            }else{
+                KLog.d(skAdLog,"onResume------>2")
+                LoadAds.getInstanceHome().advertisementLoading(this)
+                initNativeAds()
+            }
+        }
     }
 
     override fun onPause() {
@@ -391,6 +476,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(),
         super.onDestroy()
         DataStore.publicStore.unregisterChangeListener(this)
         connection.disconnect(this)
+        jobStart?.cancel()
+        jobStart =null
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

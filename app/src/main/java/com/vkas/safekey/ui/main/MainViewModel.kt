@@ -49,7 +49,6 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     }
     fun initializeServerData() {
         val bestData = LocalDataUtils.getFastIp()
-        KLog.e("TAG","ProfileManager.getProfile(DataStore.profileId)==${JsonUtil.toJson(ProfileManager.getProfile(DataStore.profileId))}")
         ProfileManager.getProfile(DataStore.profileId).let {
             if (it != null) {
                 ProfileManager.updateProfile(setSkServerData(it, bestData))

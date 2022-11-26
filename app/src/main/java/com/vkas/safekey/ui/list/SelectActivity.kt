@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.vkas.safekey.BR
 import com.vkas.safekey.R
+import com.vkas.safekey.ad.LoadAds
 import com.vkas.safekey.base.BaseActivity
 import com.vkas.safekey.bean.SkServiceBean
 import com.vkas.safekey.databinding.ActivitySelectBinding
@@ -58,7 +59,14 @@ class SelectActivity : BaseActivity<ActivitySelectBinding, SelectViewModel>() {
     override fun initData() {
         super.initData()
         initSelectRecyclerView()
+        LoadAds.getInstanceBack().advertisementLoading(this)
         viewModel.getServerListData()
+        //插屏关闭后跳转
+        LiveEventBus
+            .get(Key.PLUG_SK_BACK_AD_SHOW, Boolean::class.java)
+            .observeForever {
+                finish()
+            }
     }
 
     override fun initViewObservable() {
@@ -120,7 +128,9 @@ class SelectActivity : BaseActivity<ActivitySelectBinding, SelectViewModel>() {
      * 返回主页
      */
     private fun returnToHomePage() {
-        finish()
+        if(!LoadAds.getInstanceBack().displayBackAdvertisement(this)){
+            finish()
+        }
     }
 
     /**

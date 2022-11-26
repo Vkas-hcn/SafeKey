@@ -18,4 +18,5 @@
     <color name="txt_disconnect_time">#505476</color>
     <color name="txt_connect_state">#3BA465</color>
     <color name="txt_disconnect_state">#D3A52F</color>
+    <color name="txt_ad_body">#9F9FB1</color>
 </resources>

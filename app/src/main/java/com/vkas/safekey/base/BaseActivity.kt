@@ -6,36 +6,18 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.databinding.ViewDataBinding
+import com.vkas.safekey.utils.ActivityUtils
+
 abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModelMVVM> :
     BaseActivityMVVM<V, VM>()  {
     val tag = javaClass.simpleName
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ActivityUtils.addActivity(this,javaClass)
     }
     override fun initData() {
         super.initData()
     }
-
-    /**
-     * 监听返回
-     * */
-//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-//        return if (this.isDisableBackKey) {
-//            isDisableBackKey = false
-//            keyCode == KeyEvent.KEYCODE_BACK
-//        } else {
-//            super.onKeyDown(keyCode, event)
-//        }
-//    }
-//
-//    override fun onBackPressed() {
-//        if(isDisableBackKey){
-//            isDisableBackKey = false
-//           return
-//        }else{
-//            super.onBackPressed()
-//        }
-//    }
 
     /**
      * 获取点击事件
@@ -76,5 +58,10 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModelMVVM> :
                 getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             manager.hideSoftInputFromWindow(token, InputMethodManager.HIDE_NOT_ALWAYS)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ActivityUtils.removeActivity(this)
     }
 }

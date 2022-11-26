@@ -1,8 +1,8 @@
 package com.vkas.safekey.key
 
 object Key {
-    //开屏广告
-    const val OPEN_SK_AD = "openSkAd"
+    //开屏关闭跳转
+    const val OPEN_CLOSE_JUMP = "openCloseJump"
     //计时器数据
     const val TIMER_SK_DATA = "timerSkData"
     // 最后时间
@@ -11,8 +11,6 @@ object Key {
     const val RETURN_SK_CURRENT_PAGE = "returnSkCurrentPage"
     //服务器信息
     const val SERVER_SK_INFORMATION = "serverSkInformation"
-    //滑动
-    const val SLIDING_SK = "slidingSk"
     //连接状态
     const val CONNECTION_SK_STATUS = "connectionSkStatus"
     //绕流数据
@@ -49,8 +47,10 @@ object Key {
     const val MAILBOX_SK_ADDRESS="vkas@qq.com"
     // 插屏广告缓存
     const val PLUG_SK_ADVERTISEMENT_CACHE="plugSkAdvertisementCache"
-    // 插屏广告展示
+    // connect插屏广告展示
     const val PLUG_SK_ADVERTISEMENT_SHOW="plugSkAdvertisementShow"
+    // back插屏广告展示
+    const val PLUG_SK_BACK_AD_SHOW="plugSkBackAdShow"
     // home原生刷新
     const val HOME_SK_NATIVE_REFRESH ="homeSkNativeRefresh"
     // 广告数据
