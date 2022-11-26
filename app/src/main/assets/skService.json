@@ -6,13 +6,5 @@
     "sk_country": "Australia",
     "sk_city": "Sydney",
     "sk_ip": "5.183.177.169"
-  },
-  {
-    "sk_pwd": "i24knFzh6Sd2TYZ0H6",
-    "sk_method": "chacha20-ietf-poly1305",
-    "sk_port": 1942,
-    "sk_country": "United States",
-    "sk_city": "Dallas",
-    "sk_ip": "23.134.94.54"
   }
 ]
