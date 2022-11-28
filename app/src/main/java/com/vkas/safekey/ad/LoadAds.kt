@@ -435,7 +435,7 @@ class LoadAds private constructor(val pos: String) {
             adView.callToActionView?.visibility = View.INVISIBLE
         } else {
             adView.callToActionView?.visibility = View.VISIBLE
-            (adView.callToActionView as Button).text = nativeAd.callToAction
+            (adView.callToActionView as TextView).text = nativeAd.callToAction
         }
 
         if (nativeAd.icon == null) {
